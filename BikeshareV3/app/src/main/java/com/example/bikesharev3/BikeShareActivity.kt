@@ -16,8 +16,8 @@ class BikeShareActivity : AppCompatActivity() {
         setContentView(R.layout.activity_bike_share)
 
         // FINDING BUTTONS
-        sButton = findViewById(R.id.start_ride_button)
-        eButton = findViewById(R.id.end_ride_button)
+        sButton = findViewById(R.id.start_ride_activity_button)
+        eButton = findViewById(R.id.end_ride_activity_button)
 
         // START_BUTTON CHANGE PAGE
         sButton.setOnClickListener(View.OnClickListener {

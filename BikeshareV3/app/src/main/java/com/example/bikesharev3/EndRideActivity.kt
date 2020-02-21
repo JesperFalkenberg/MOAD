@@ -19,16 +19,16 @@ class EndRideActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_bike_share)
+        setContentView(R.layout.activity_end_ride)
 
-        mLastRide = findViewById(R.id.last_ride)
+        mLastRide = findViewById(R.id.e_last_ride)
 
         // EDIT TEXTS
-        mWhatText = findViewById(R.id.what_text)
-        mWhereText = findViewById(R.id.where_text)
+        mWhatText = findViewById(R.id.e_what_text)
+        mWhereText = findViewById(R.id.e_where_text)
 
         // BUTTON
-        mEndButton = findViewById(R.id.start_ride_button)
+        mEndButton = findViewById(R.id.end_ride_button)
 
         //TODO change this stuff to fit
         // ADD RIDE CLICK EVENT

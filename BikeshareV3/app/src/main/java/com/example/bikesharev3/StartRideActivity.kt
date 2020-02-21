@@ -19,7 +19,7 @@ class StartRideActivity : AppCompatActivity() {
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-            setContentView(R.layout.activity_bike_share)
+            setContentView(R.layout.activity_start_ride)
 
             mLastRide = findViewById(R.id.last_ride)
 
