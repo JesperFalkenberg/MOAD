@@ -14,8 +14,11 @@ class EndRideActivity : AppCompatActivity() {
     private lateinit var mWhereText:EditText
     private lateinit var mEndButton:Button
 
-
     private lateinit var mRide:Ride
+
+    companion object {
+        lateinit var sRidesDB: RidesDB
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +42,7 @@ class EndRideActivity : AppCompatActivity() {
             updateUI()
         })
 
+        sRidesDB = RidesDB.get(this)
     }
 
     private fun updateUI(){mLastRide.setText(mRide.toString())}

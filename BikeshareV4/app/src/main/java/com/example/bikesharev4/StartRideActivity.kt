@@ -14,8 +14,11 @@ class StartRideActivity : AppCompatActivity() {
         private lateinit var mWhereText:EditText
         private lateinit var mStartButton:Button
 
-
         private lateinit var mRide:Ride
+
+        companion object {
+            lateinit var sRidesDB: RidesDB
+        }
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
@@ -39,6 +42,7 @@ class StartRideActivity : AppCompatActivity() {
                 updateUI()
             })
 
+            sRidesDB = RidesDB.get(this)
         }
 
         private fun updateUI(){mLastRide.setText(mRide.toString())}

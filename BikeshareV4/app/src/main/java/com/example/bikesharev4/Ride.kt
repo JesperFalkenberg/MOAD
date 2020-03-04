@@ -13,5 +13,7 @@ class Ride(var what:String, var where:String, var end:String){
     fun getend():String{return end}
 
     // TO STRING
-    override fun toString():String{return what + " started here: " + where + "and ended here:" + end}
+    override fun toString():String {
+        return "$what, from $where to $end"
+    }
 }
