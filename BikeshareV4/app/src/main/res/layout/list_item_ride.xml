@@ -6,9 +6,27 @@
     >
 
     <TextView
-        android:id="@+id/ride_item"
+        android:id="@+id/bike_ride"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_margin="5dp"
+        />
+
+    <TextView
+        android:id="@+id/start_ride"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_margin="5dp"
+        />
+
+    <TextView
+        android:id="@+id/end_ride"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_margin="5dp"
         />
 
 </LinearLayout>

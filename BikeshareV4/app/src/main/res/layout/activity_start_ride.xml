@@ -22,8 +22,8 @@ tools:context=".StartRideActivity"
         android:text="Last added: "
         />
 
-    <EditText
-        android:id="@+id/last_ride"
+    <TextView
+        android:id="@+id/s_last_ride"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
@@ -45,7 +45,7 @@ tools:context=".StartRideActivity"
         />
 
     <EditText
-        android:id="@+id/what_text"
+        android:id="@+id/s_what_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
@@ -67,7 +67,7 @@ tools:context=".StartRideActivity"
         />
 
     <EditText
-        android:id="@+id/where_text"
+        android:id="@+id/s_where_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
