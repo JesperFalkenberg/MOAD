@@ -46,7 +46,7 @@ class BikeShareActivity : AppCompatActivity() {
             val intent = Intent(this, EndRideActivity::class.java)
             startActivity(intent)
         })
-
+/*
         // LIST_BUTTON UPDATE RIDES
         lButton.setOnClickListener(View.OnClickListener {
             val newList = sRidesDB.getRidesDB()
@@ -62,7 +62,6 @@ class BikeShareActivity : AppCompatActivity() {
 
         mAdapter = RideArrayAdapter(this, rideList)
         ride_list.adapter = mAdapter
+*/
     }
-
-
 }
