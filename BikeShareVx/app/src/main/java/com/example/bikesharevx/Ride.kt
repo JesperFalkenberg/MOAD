@@ -1,4 +1,5 @@
-package com.example.bikesharev4
+package com.example.bikesharevx
+
 
 class Ride(var what:String, var where:String, var end:String, var timeStart:String, var timeEnd:String){
 

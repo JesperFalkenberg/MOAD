@@ -91,8 +91,8 @@ class BikeShareFragment : Fragment() {
             val ride = mRides[position]
             holder.apply {
                 mBikeName.text = ride.what
-                mStartRide.text = ride.where
-                mEndRide.text = ride.end
+                mStartRide.text = ride.where + " at " + ride.timeStart
+                mEndRide.text = ride.end + " at " + ride.timeEnd
             }
         }
     }
