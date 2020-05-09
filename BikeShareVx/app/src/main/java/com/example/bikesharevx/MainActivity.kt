@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import io.realm.Realm
 
-class MainActivity: AppCompatActivity(), BikeShareFragment.Callbacks, EndRideFragment.Callbacks, StartRideFragment.Callbacks {
+class MainActivity: AppCompatActivity(), BikeShareFragment.Callbacks, EndRideFragment.Callbacks, StartRideFragment.Callbacks, RegisterFragment.Callbacks {
 
     companion object {
         lateinit var mRealm: Realm
@@ -47,6 +47,14 @@ class MainActivity: AppCompatActivity(), BikeShareFragment.Callbacks, EndRideFra
 
     override fun goToEnd() {
         val fragment = EndRideFragment()
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
+    }
+
+    override fun goToBike() {
+        val fragment = RegisterFragment()
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.fragment_container, fragment)

@@ -8,30 +8,36 @@ import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.*
+import io.realm.OrderedRealmCollection
 import io.realm.Realm
+import io.realm.RealmRecyclerViewAdapter
 import java.io.IOException
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
-class EndRideFragment : Fragment() {
+class RegisterFragment : Fragment() {
 
     // GUI VARIABLES
-    private lateinit var mBikeID: EditText
-    private lateinit var mEndButton: Button
+    private lateinit var mBikeType: EditText
+    private lateinit var mBikePrice: EditText
+    private lateinit var mRegisterButton: Button
+    private lateinit var mListButton: Button
     private lateinit var mBackButton: Button
+    private lateinit var rView: RecyclerView
     private var mLon: Double = 0.0
     private var mLat: Double = 0.0
 
@@ -43,7 +49,6 @@ class EndRideFragment : Fragment() {
         lateinit var mRealm: Realm
         private const val ALL_PERMISSIONS_RESULT = 1011
     }
-
     interface Callbacks {
         fun goToBikeShare()
     }
@@ -60,7 +65,7 @@ class EndRideFragment : Fragment() {
         container: ViewGroup?,
         savedInstance: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_start_end_ride, container, false)
+        val view = inflater.inflate(R.layout.fragment_register, container, false)
 
         // PERMISSIONS (location)
         mPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -84,51 +89,79 @@ class EndRideFragment : Fragment() {
 
         // REALM
         mRealm = Realm.getDefaultInstance()
-        mBikeID = view.findViewById<EditText>(R.id.s_e_ID_text)
-        mEndButton = view.findViewById<Button>(R.id.s_e_ride_button)
+        val res = mRealm.where(RealmBike::class.java).findAll()
+        rView = view.findViewById(R.id.r_bike_recycle_view)
+        rView.layoutManager = LinearLayoutManager(activity)
+        rView.adapter = RealmBikeAdapter(res!!)
 
-        mEndButton.apply { text = "End Ride"; isEnabled = true }
+        mBikeType = view.findViewById<EditText>(R.id.r_type)
+        mBikePrice = view.findViewById<EditText>(R.id.r_price)
 
-
-        mEndButton.setOnClickListener {
-            mRealm.executeTransactionAsync { realm ->
-                if(mBikeID.text.contains(Regex("\\D$"))){
-                    mBikeID.setText("No letters here!")
-                } else {
-                    val bikeID: String = mBikeID.text.toString()
-                    var bikeLoc: String = getAddress(mLon,mLat)
-                    if (bikeLoc == "NONE") {bikeLoc = "($mLon $mLat)"}
-
-                    if (bikeID.isNotEmpty() && bikeLoc.isNotEmpty()) {
-                        var openRide =
-                            realm.where(RealmRide::class.java).equalTo("bikeID", bikeID.toInt()).and()
-                                .equalTo("endLocation", "").findFirst()
-
-                        if (openRide != null) {
-                            openRide.endLocation = bikeLoc
-                            openRide.endTime = LocalDateTime.now()
-                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")).toString()
-                            realm.copyToRealm(openRide!!)
-                            openRide = null
-
-                            var bike = realm.where(RealmBike::class.java).equalTo("id", bikeID.toInt()).findFirst()
-                            bike?.available = true
-                            realm.copyToRealm(bike!!)
-                            bike = null
-                            mBikeID.setText("")
-                        } else {
-                            mBikeID.setText("No open ride with that bikeID")
-                        }
-                    }
+        mRegisterButton = view.findViewById(R.id.r_register_button)
+        mRegisterButton.setOnClickListener {
+            if (mBikePrice.text.contains(Regex("\\D$"))){
+                mBikePrice.setText("No letters!")
+            } else {
+                mRealm.executeTransactionAsync { realm ->
+                    var maxID = realm.where(RealmBike::class.java).max("id")
+                    if (maxID == null) {maxID = 0}
+                    val pic = null
+                    val bike = RealmBike((maxID.toInt()+1),mBikeType.text.toString(), pic,mBikePrice.text.toString().toDouble(),mLon,mLat,true)
+                    realm.copyToRealm(bike)
                 }
             }
         }
 
-        mBackButton = view.findViewById(R.id.s_e_back_button)
+        mListButton = view.findViewById<Button>(R.id.r_list_button)
+        mListButton.setOnClickListener {
+            val results = mRealm.where(RealmBike::class.java).findAll()
+            rView = view.findViewById(R.id.r_bike_recycle_view)
+            rView.layoutManager = LinearLayoutManager(activity)
+            rView.adapter = RealmBikeAdapter(results!!)
+        }
+
+        mBackButton = view.findViewById(R.id.r_back_button)
         mBackButton.setOnClickListener { callbacks?.goToBikeShare() }
         mBackButton.animate().x(0F).y(0F)
 
         return view
+    }
+
+    private inner class RealmBikeAdapter
+        (data: OrderedRealmCollection<RealmBike>) :
+        RealmRecyclerViewAdapter<RealmBike, RealmBikeHolder>(data, true) {
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int)
+                : RealmBikeHolder {
+            val view = LayoutInflater.from(context)
+                .inflate(R.layout.list_item_bike, parent, false)
+            return RealmBikeHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: RealmBikeHolder, position: Int) {
+            val rbike = getItem(position)!!
+            val type = rbike.type
+            val id = rbike.id
+            val price = rbike.price
+            val lon = rbike.lon
+            val lat = rbike.lat
+            var address = getAddress(lon,lat)
+            var stat = ""
+            if (rbike.available) {stat = "Available"} else { stat = "Unavailable"}
+
+
+            if (address == "NONE") { address = "($lon $lat)"}
+            holder.bikeText.text = "ID: $id $type, Price: $price/hour - $stat - Currently at $address"
+
+            holder.itemView.setOnClickListener {
+                //
+            }
+        }
+    }
+
+    private inner class RealmBikeHolder(view: View): RecyclerView.ViewHolder(view){
+        val bikePic = view.findViewById<ImageView>(R.id.bike_item_pic)
+        val bikeText = view.findViewById<TextView>(R.id.bike_item_text)
     }
 
     private fun permissionsToRequest(
@@ -189,7 +222,7 @@ class EndRideFragment : Fragment() {
 
     override fun onDetach() {
         super.onDetach()
-        stopLocationUpdates()
         callbacks = null
+        stopLocationUpdates()
     }
 }
