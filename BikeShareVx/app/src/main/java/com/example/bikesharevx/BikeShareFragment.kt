@@ -37,6 +37,7 @@ class BikeShareFragment : Fragment() {
     private lateinit var rButton: Button
     private lateinit var sButton: Button
     private lateinit var eButton: Button
+    private lateinit var fButton: Button
     private lateinit var lButton: Button
     private lateinit var levelAPI: TextView
     private lateinit var rView: RecyclerView
@@ -54,6 +55,7 @@ class BikeShareFragment : Fragment() {
         fun goToStart()
         fun goToEnd()
         fun goToBike()
+        fun goToFunds()
     }
     private var callbacks: Callbacks? = null
 
@@ -102,6 +104,11 @@ class BikeShareFragment : Fragment() {
             callbacks?.goToEnd()
         }
 
+        fButton = view.findViewById(R.id.funds_activity_button)
+        fButton.setOnClickListener {
+            callbacks?.goToFunds()
+        }
+
         lButton = view.findViewById<Button>(R.id.list_rides_button)
         lButton.setOnClickListener {
             val results = mRealm.where(RealmRide::class.java).findAll()
@@ -130,29 +137,33 @@ class BikeShareFragment : Fragment() {
 
         override fun onBindViewHolder(holder: RealmRideHolder, position: Int) {
             val rride = getItem(position)!!
-            val id = rride.bikeID
+            val bikeId = rride.bikeID
             val rideId = rride.id
-            val combId = "B$id-R$rideId"
-            holder.IDrideID.text = combId
-            holder.bikeType.text = rride.bikeType
-            holder.startLoc.text = rride.startLocation
-            holder.startTime.text = rride.startTime
-            holder.endLoc.text = rride.endLocation
-            holder.endTime.text = rride.endTime
+            val bikeType = rride.bikeType
+            val startLoc = rride.startLocation
+            val startTime = rride.startTime
 
+            var t: String = "$rideId with Bike $bikeId, $bikeType \n From: $startLoc at $startTime"
+
+            val endLoc = rride.endLocation
+            val endTime = rride.endTime
+
+            if (endLoc != "") {
+                t = t + "\n To: $endLoc at $endTime"
+            }
+
+            holder.rideItemText.setText(t)
+/*
             holder.itemView.setOnClickListener {
                 TODO( "implement popup and deletion of ride")
+
             }
+ */
         }
     }
 
     private inner class RealmRideHolder(view: View): RecyclerView.ViewHolder(view){
-        val IDrideID: TextView = view.findViewById(R.id.id_ride_id)
-        val bikeType: TextView = view.findViewById(R.id.bike_type)
-        val startLoc: TextView = view.findViewById(R.id.start_location)
-        val startTime: TextView = view.findViewById(R.id.start_time)
-        val endLoc: TextView = view.findViewById(R.id.end_location)
-        val endTime: TextView = view.findViewById(R.id.end_time)
+        val rideItemText: TextView = view.findViewById(R.id.ride_item_text)
     }
 
     private fun permissionsToRequest(

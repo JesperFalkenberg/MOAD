@@ -32,6 +32,7 @@ class StartRideFragment : Fragment() {
     private lateinit var mBikeID:EditText
     private lateinit var mStartButton:Button
     private lateinit var mBackButton: Button
+    private var funds: RealmFunds? = null
 
     private val mPermissions: ArrayList<String> = ArrayList()
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
@@ -77,8 +78,13 @@ class StartRideFragment : Fragment() {
         mStartButton.setOnClickListener{
             mRealm.executeTransactionAsync{ realm ->
                 // TODO
+
+                funds = realm.where(RealmFunds::class.java).findFirst()
+                if (funds == null) funds = RealmFunds(0.0)
                 if(mBikeID.text.contains(Regex("\\D$"))){
                     mBikeID.setText("No letters here!")
+                } else if (funds!!.amount < 0) {
+                    mBikeID.setText("Not enough funds for starting a ride!")
                 } else {
                     val bikeID = mBikeID.text.toString().toInt()
 
@@ -103,6 +109,7 @@ class StartRideFragment : Fragment() {
 
                         bike = null
                         mBikeID.setText("")
+                        callbacks?.goToBikeShare()
                     } else { mBikeID.setText("No available bike with that ID.")}
                 }
             }

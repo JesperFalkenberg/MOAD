@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+<LinearLayout
     android:orientation="vertical"
     android:gravity="center"
     android:layout_width="match_parent"
@@ -46,12 +50,29 @@
 
     </LinearLayout>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Photo:"
+        />
+    <ImageView
+        android:id="@+id/r_image_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+    <ImageButton
+        android:id="@+id/r_image_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_menu_camera"
+        />
 
     <Button
         android:id="@+id/r_register_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Register bike"/>
+        android:text="Register bike"
+        />
 
     <Button
         android:id="@+id/r_list_button"
@@ -67,3 +88,4 @@
         android:textSize="12sp"
         />
 </LinearLayout>
+</ScrollView>

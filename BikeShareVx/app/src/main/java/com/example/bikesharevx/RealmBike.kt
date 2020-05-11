@@ -11,5 +11,8 @@ open class RealmBike(
     var price: Double = 0.0,
     var lon: Double = 0.0,
     var lat: Double = 0.0,
-    var available: Boolean = true
-) : RealmObject()
+    var available: Boolean = true,
+    var gotPic: Boolean = true
+) : RealmObject() {
+    val photoFileName get() = "IMG_$id.jpg"
+}

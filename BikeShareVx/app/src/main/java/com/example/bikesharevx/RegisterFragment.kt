@@ -4,21 +4,25 @@ package com.example.bikesharevx
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Address
 import android.location.Geocoder
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.core.widget.ImageViewCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,6 +30,8 @@ import com.google.android.gms.location.*
 import io.realm.OrderedRealmCollection
 import io.realm.Realm
 import io.realm.RealmRecyclerViewAdapter
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.util.*
 
@@ -35,11 +41,25 @@ class RegisterFragment : Fragment() {
     private lateinit var mBikeType: EditText
     private lateinit var mBikePrice: EditText
     private lateinit var mRegisterButton: Button
-    private lateinit var mListButton: Button
+    private lateinit var mImageButton: ImageButton
     private lateinit var mBackButton: Button
     private lateinit var rView: RecyclerView
     private var mLon: Double = 0.0
     private var mLat: Double = 0.0
+
+    // PHOTO
+    private lateinit var mListButton: Button
+    private lateinit var mImageView: ImageView
+    private lateinit var mPhotoFile: File
+    private lateinit var mPhotoUri: Uri
+    private val REQUEST_CONTACT = 1
+    private val REQUEST_PHOTO = 2
+    // private val DATE_FORMAT = "EEE, MM, dd"
+
+    private var mBikeToAdd = RealmBike()
+
+    private lateinit var filesDir: File
+    fun getPhotoFile(r: RealmBike): File = File(filesDir, r.photoFileName)
 
     private val mPermissions: ArrayList<String> = ArrayList()
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
@@ -66,7 +86,7 @@ class RegisterFragment : Fragment() {
         savedInstance: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_register, container, false)
-
+        filesDir = context!!.applicationContext.filesDir
         // PERMISSIONS (location)
         mPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
         mPermissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -97,18 +117,62 @@ class RegisterFragment : Fragment() {
         mBikeType = view.findViewById<EditText>(R.id.r_type)
         mBikePrice = view.findViewById<EditText>(R.id.r_price)
 
+        mImageView = view.findViewById(R.id.r_image_view)
+        mImageButton = view.findViewById(R.id.r_image_button)
+        mImageButton.apply {
+            val packageManager: PackageManager = requireActivity().packageManager
+            val captureImage = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            val resolvedActivity: ResolveInfo? = packageManager.resolveActivity(captureImage, PackageManager.MATCH_DEFAULT_ONLY)
+            if (resolvedActivity == null) {
+                isEnabled = false
+            }
+            setOnClickListener {
+                mPhotoFile = File(context.applicationContext.filesDir, mBikeToAdd.photoFileName)
+                mPhotoUri = FileProvider.getUriForFile(
+                    requireActivity(),
+                    "com.example.bikesharevx.fileprovider",
+                    mPhotoFile
+                )
+                captureImage.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri)
+                val cameraActivities: List<ResolveInfo> = packageManager.queryIntentActivities(captureImage, PackageManager.MATCH_DEFAULT_ONLY)
+                for (ca in cameraActivities) {
+                    requireActivity().grantUriPermission(
+                        ca.activityInfo.packageName,
+                        mPhotoUri,
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+                }
+                startActivityForResult(captureImage, REQUEST_PHOTO)
+            }
+        }
+
         mRegisterButton = view.findViewById(R.id.r_register_button)
         mRegisterButton.setOnClickListener {
-            if (mBikePrice.text.contains(Regex("\\D$"))){
-                mBikePrice.setText("No letters!")
-            } else {
-                mRealm.executeTransactionAsync { realm ->
-                    var maxID = realm.where(RealmBike::class.java).max("id")
-                    if (maxID == null) {maxID = 0}
-                    val pic = null
-                    val bike = RealmBike((maxID.toInt()+1),mBikeType.text.toString(), pic,mBikePrice.text.toString().toDouble(),mLon,mLat,true)
-                    realm.copyToRealm(bike)
+            if(mBikeType.text.isNotEmpty() && mBikePrice.text.isNotEmpty()) {
+                if (mBikePrice.text.contains(Regex("\\D$"))){
+                    mBikePrice.setText("Numbers only!")
+                } else {
+                    val price = mBikePrice.text.toString().toDouble()
+                    val pic = mBikeToAdd.picture
+                    val gotPic: Boolean = pic != null
+
+                    mRealm.executeTransactionAsync { realm ->
+                        var maxID = realm.where(RealmBike::class.java).max("id")
+                        if (maxID == null) {maxID = 0}
+
+                        val newID = maxID.toInt()+1
+
+                        val bike = RealmBike(newID,mBikeType.text.toString(), pic, price, mLon, mLat,true, gotPic)
+                        realm.copyToRealm(bike)
+                    }
+                    mImageView.setImageBitmap(null)
+                    mBikeType.setText("")
+                    mBikePrice.setText("")
                 }
+            } else {
+                mBikePrice.setText("Put the hourly price here!")
+                mBikeType.setText("Put the type of bike here!")
+                //
             }
         }
 
@@ -151,7 +215,12 @@ class RegisterFragment : Fragment() {
 
 
             if (address == "NONE") { address = "($lon $lat)"}
-            holder.bikeText.text = "ID: $id $type, Price: $price/hour - $stat - Currently at $address"
+            holder.bikeText.text = " BikeID: $id $type, Price: $price/hour \n $stat - Currently at $address"
+
+            if (rbike.gotPic) {
+                holder.bikePic.setImageBitmap(BitmapFactory.decodeByteArray(rbike.picture, 0, rbike.picture!!.size))
+            }
+
 
             holder.itemView.setOnClickListener {
                 //
@@ -220,9 +289,32 @@ class RegisterFragment : Fragment() {
         return stringBuilder.toString()
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            REQUEST_PHOTO -> {
+//                requireActivity().revokeUriPermission(mPhotoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                updateBikePhoto()
+            }
+        }
+    }
+
+    private fun updateBikePhoto() {
+        if (mPhotoFile.exists()) {
+            val bitMap =
+                getScaledBitMap(mPhotoFile.absolutePath, requireActivity())
+            mImageView.setImageBitmap(bitMap)
+
+            val stream = ByteArrayOutputStream()
+            bitMap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            val byteArray = stream.toByteArray()
+            mBikeToAdd.picture = byteArray
+        }
+    }
+
     override fun onDetach() {
         super.onDetach()
         callbacks = null
         stopLocationUpdates()
+//        requireActivity().revokeUriPermission(mPhotoUri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
     }
 }

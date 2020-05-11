@@ -109,13 +109,26 @@ class EndRideFragment : Fragment() {
                             openRide.endTime = LocalDateTime.now()
                                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")).toString()
                             realm.copyToRealm(openRide!!)
-                            openRide = null
+
 
                             var bike = realm.where(RealmBike::class.java).equalTo("id", bikeID.toInt()).findFirst()
                             bike?.available = true
                             realm.copyToRealm(bike!!)
+
+                            val sT = openRide.startTime
+                            val eT = openRide.endTime
+
+                            var funds = realm.where(RealmFunds::class.java).findFirst()
+                            if (funds == null) {funds = RealmFunds(0.0)}
+                            funds.amount -= (hourDiff(sT,eT) * bike.price)
+                            realm.copyToRealm(funds)
+
+                            openRide = null
                             bike = null
+                            funds = null
+
                             mBikeID.setText("")
+                            callbacks?.goToBikeShare()
                         } else {
                             mBikeID.setText("No open ride with that bikeID")
                         }
@@ -129,6 +142,32 @@ class EndRideFragment : Fragment() {
         mBackButton.animate().x(0F).y(0F)
 
         return view
+    }
+
+    private fun hourDiff(s: String, e: String): Int {
+        var diff = 1
+
+        val y1 = s.substring(0,4).toInt()
+        val y2 = e.substring(0,4).toInt()
+
+        diff += ((y2-y1) * 365 * 24)
+
+        val m1 = s.substring(5,7).toInt()
+        val m2 = e.substring(5,7).toInt()
+
+        diff += ((m2-m1) * 24 * 30)
+
+        val d1 = s.substring(8,10).toInt()
+        val d2 = e.substring(8,10).toInt()
+
+        diff += ((d2-d1) * 24)
+
+        val h1 = s.substring(11,13).toInt()
+        val h2 = e.substring(11,13).toInt()
+
+        diff += (h2-h1)
+
+        return diff
     }
 
     private fun permissionsToRequest(

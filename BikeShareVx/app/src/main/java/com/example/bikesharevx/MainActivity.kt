@@ -4,12 +4,11 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import io.realm.Realm
 
-class MainActivity: AppCompatActivity(), BikeShareFragment.Callbacks, EndRideFragment.Callbacks, StartRideFragment.Callbacks, RegisterFragment.Callbacks {
+class MainActivity: AppCompatActivity(), BikeShareFragment.Callbacks, EndRideFragment.Callbacks, StartRideFragment.Callbacks, RegisterFragment.Callbacks, FundsFragment.Callbacks {
 
     companion object {
         lateinit var mRealm: Realm
     }
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +16,10 @@ class MainActivity: AppCompatActivity(), BikeShareFragment.Callbacks, EndRideFra
         setContentView(R.layout.activity_main)
 
         Realm.init(this)
-
+/*
+        mRealm = Realm.getDefaultInstance()
+        mRealm.executeTransactionAsync { realm -> realm.copyToRealm(RealmFunds()) }
+*/
         val curFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
 
         if(curFragment == null) {
@@ -55,6 +57,14 @@ class MainActivity: AppCompatActivity(), BikeShareFragment.Callbacks, EndRideFra
 
     override fun goToBike() {
         val fragment = RegisterFragment()
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
+    }
+
+    override fun goToFunds(){
+        val fragment = FundsFragment()
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.fragment_container, fragment)
