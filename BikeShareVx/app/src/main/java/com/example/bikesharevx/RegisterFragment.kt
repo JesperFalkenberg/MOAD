@@ -214,7 +214,7 @@ class RegisterFragment : Fragment() {
             if (rbike.available) {stat = "Available"} else { stat = "Unavailable"}
 
 
-            if (address == "NONE") { address = "($lon $lat)"}
+            if (address == "NONE" || address == "") { address = "($lon $lat)"}
             holder.bikeText.text = " BikeID: $id $type, Price: $price/hour \n $stat - Currently at $address"
 
             if (rbike.gotPic) {
@@ -257,14 +257,13 @@ class RegisterFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
-        if (checkPermission()) {
-            val locationRequest = LocationRequest().apply {
-                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                interval = 20000
-                fastestInterval = 10000
-            }
-            mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, null)
+        if (checkPermission()) { return }
+        val locationRequest = LocationRequest().apply {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            interval = 200
+            fastestInterval = 100
         }
+        mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, null)
     }
     private fun stopLocationUpdates() {
         mFusedLocationProviderClient

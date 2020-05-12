@@ -72,6 +72,7 @@ class EndRideFragment : Fragment() {
             }
         }
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
+        startLocationUpdates()
         mLocationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
@@ -97,7 +98,7 @@ class EndRideFragment : Fragment() {
                 } else {
                     val bikeID: String = mBikeID.text.toString()
                     var bikeLoc: String = getAddress(mLon,mLat)
-                    if (bikeLoc == "NONE") {bikeLoc = "($mLon $mLat)"}
+                    if (bikeLoc == "NONE"|| bikeLoc == "") {bikeLoc = "($mLon $mLat)"}
 
                     if (bikeID.isNotEmpty() && bikeLoc.isNotEmpty()) {
                         var openRide =
@@ -194,14 +195,13 @@ class EndRideFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
-        if (checkPermission()) {
-            val locationRequest = LocationRequest().apply {
-                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                interval = 20000
-                fastestInterval = 10000
-            }
-            mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, null)
+        if (checkPermission()) { return }
+        val locationRequest = LocationRequest().apply {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            interval = 200
+            fastestInterval = 100
         }
+        mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, null)
     }
     private fun stopLocationUpdates() {
         mFusedLocationProviderClient
