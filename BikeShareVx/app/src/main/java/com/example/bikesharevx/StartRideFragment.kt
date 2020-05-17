@@ -76,7 +76,7 @@ class StartRideFragment : Fragment() {
         mStartButton.apply { text = "Start Ride"; isEnabled = true }
 
         mStartButton.setOnClickListener{
-            mRealm.executeTransactionAsync{ realm ->
+            mRealm.executeTransaction{ realm ->
                 // TODO
 
                 funds = realm.where(RealmFunds::class.java).findFirst()
@@ -85,7 +85,7 @@ class StartRideFragment : Fragment() {
                     mBikeID.setText("No letters here!")
                 } else if (funds!!.amount < 0) {
                     mBikeID.setText("Not enough funds for starting a ride!")
-                } else {
+                } else if (mBikeID.text.toString() != "") {
                     val bikeID = mBikeID.text.toString().toInt()
 
                     var maxID = realm.where(RealmRide::class.java).max("id")
@@ -111,6 +111,8 @@ class StartRideFragment : Fragment() {
                         mBikeID.setText("")
                         callbacks?.goToBikeShare()
                     } else { mBikeID.setText("No available bike with that ID.")}
+                } else {
+                    mBikeID.setText("You cannot start a ride without a bike.")
                 }
             }
         }

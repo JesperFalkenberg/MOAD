@@ -80,8 +80,8 @@ class FundsFragment : Fragment() {
 
         mFundsButton = view.findViewById(R.id.f_button)
         mFundsButton.setOnClickListener {
-            if (mFundsToAdd.text.contains(Regex("\\D$"))){
-                mFundsToAdd.setText("No letters!")
+            if (mFundsToAdd.text.toString() == "" || mFundsToAdd.text.contains(Regex("\\D$"))){
+                mFundsToAdd.setText("Input an amount in numbers.")
             } else {
                 fundsAmount += mFundsToAdd.text.toString().toDouble()
                 mCurFunds.setText(fundsAmount.toString())

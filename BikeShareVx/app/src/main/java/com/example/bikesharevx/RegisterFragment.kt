@@ -156,7 +156,7 @@ class RegisterFragment : Fragment() {
                     val pic = mBikeToAdd.picture
                     val gotPic: Boolean = pic != null
 
-                    mRealm.executeTransactionAsync { realm ->
+                    mRealm.executeTransaction{ realm ->
                         var maxID = realm.where(RealmBike::class.java).max("id")
                         if (maxID == null) {maxID = 0}
 

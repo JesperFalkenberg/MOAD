@@ -16,10 +16,7 @@ class MainActivity: AppCompatActivity(), BikeShareFragment.Callbacks, EndRideFra
         setContentView(R.layout.activity_main)
 
         Realm.init(this)
-/*
-        mRealm = Realm.getDefaultInstance()
-        mRealm.executeTransactionAsync { realm -> realm.copyToRealm(RealmFunds()) }
-*/
+
         val curFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
 
         if(curFragment == null) {

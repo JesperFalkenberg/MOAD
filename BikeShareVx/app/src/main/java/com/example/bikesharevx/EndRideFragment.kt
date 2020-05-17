@@ -72,7 +72,6 @@ class EndRideFragment : Fragment() {
             }
         }
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
-        startLocationUpdates()
         mLocationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
@@ -92,9 +91,9 @@ class EndRideFragment : Fragment() {
 
 
         mEndButton.setOnClickListener {
-            mRealm.executeTransactionAsync { realm ->
-                if(mBikeID.text.contains(Regex("\\D$"))){
-                    mBikeID.setText("No letters here!")
+            mRealm.executeTransaction{ realm ->
+                if(mBikeID.text.toString() == "" || mBikeID.text.contains(Regex("\\D$"))){
+                    mBikeID.setText("Please input a bikeID here.")
                 } else {
                     val bikeID: String = mBikeID.text.toString()
                     var bikeLoc: String = getAddress(mLon,mLat)
